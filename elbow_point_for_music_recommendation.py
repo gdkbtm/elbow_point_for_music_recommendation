@@ -32,6 +32,8 @@ def read_data():
 
 def load_data(name):
     filtered_df = []
+    message = 1
+
     df = read_data()
     #if df is not None:
     df = df.drop_duplicates(subset=['uri'], keep='first')
@@ -40,10 +42,12 @@ def load_data(name):
         df['artists_name_lower'] = df['artists_name'].str.lower()
     
         filtered_df = df[df['artists_name_lower'] == name.lower()]
+        if(len(filtered_df) == 0):
+            message = 0
         df['genres'] = df.genres.apply(lambda x: [i[1:-1] for i in str(x)[1:-1].split(", ")])
     exploded_track_df = df.explode("genres")
 
-    return exploded_track_df, filtered_df
+    return exploded_track_df, filtered_df, message
 
 def find_highest_duplicate(arr):
     counts = Counter(arr)
@@ -65,7 +69,7 @@ def get_artist_genre(highest_dup):
 
 
 # Define function to return Spotify URIs and audio feature values of top neighbors (ascending)
-def n_neighbors_uri_audio(exploded_track_df, filtered_df, artist_select, genre, start_year, end_year, test_feat):
+def n_neighbors_uri_audio(exploded_track_df, filtered_df, artist_select, start_year, end_year, test_feat):
     # The artist given
     if(len(artist_select) > 0):
         print('The artist given: ', artist_select)
@@ -119,16 +123,6 @@ def n_neighbors_uri_audio(exploded_track_df, filtered_df, artist_select, genre, 
     audios = genre_data.iloc[n_neighbors][audio_feats].to_numpy()
           
     return genre, genre_data, uris, audios, artists_id, artists_name, artist_info
-
-#name = 'Simon & Garfunkel'
-#name = 'Michael Jackson'
-#exploded_track_df, filtered_df = load_data(name)
-
-genre = ''
-test_feat = [0.5, 0.5, 0.5, 0.0, 0.45, 118.0]
-start_year = 1960
-end_year = 2000
-#genre, genre_data, uris, audios, artists_id, artists_name, artist_info = n_neighbors_uri_audio(exploded_track_df, filtered_df, name, genre, start_year, end_year, test_feat)
 
 #creates artist_recommend.csv for recommeneded songs 
 def create_artist_recommend(genre_data):
@@ -213,24 +207,27 @@ if __name__ == '__main__':
     args.add_argument("--artist", "-a", type=str, default='Eagles')
 
     parsed_args = args.parse_args()
-    
+    given_artist = parsed_args.artist 
     # Load data
-    exploded_track_df, filtered_df = load_data(parsed_args.artist)
-    test_feat = [0.5, 0.5, 0.5, 0.0, 0.45, 118.0]
-    start_year = 1960
-    end_year = 2000
-    genre, genre_data, uris, audios, artists_id, artists_name, artist_info = n_neighbors_uri_audio(exploded_track_df, filtered_df, parsed_args.artist, genre, start_year, end_year, test_feat)
+    exploded_track_df, filtered_df, message = load_data(given_artist)
+    if(message == 0):
+        print('The given artist', given_artist, 'not found. Please try again.')
+    else:
+        test_feat = [0.5, 0.5, 0.5, 0.0, 0.45, 118.0] # not used
+        start_year = 1960
+        end_year = 2000
+        genre, genre_data, uris, audios, artists_id, artists_name, artist_info = n_neighbors_uri_audio(exploded_track_df, filtered_df, parsed_args.artist, start_year, end_year, test_feat)
 
-    create_artist_recommend(genre_data)
-    #The Elbow Point: Optimal k Value
-    #find optimal k value for popularity vs loudness
-    X = find_elbowpoint()
-    #Building the Clustering Model and Calculating Distortion and Inertia
-    #fit the K-means model for different values of k (number of clusters) and 
-    #calculate both the distortion and inertia for each value.
-    mapping1, distortions, K = cluster_model(X)
-    #Displaying Distortion Values
-    distoted_values(mapping1, distortions, K)
-    #Displaying Inertia Values
-    inertia_values()
+        create_artist_recommend(genre_data)
+        #The Elbow Point: Optimal k Value
+        #find optimal k value for popularity vs loudness
+        X = find_elbowpoint()
+        #Building the Clustering Model and Calculating Distortion and Inertia
+        #fit the K-means model for different values of k (number of clusters) and 
+        #calculate both the distortion and inertia for each value.
+        mapping1, distortions, K = cluster_model(X)
+        #Displaying Distortion Values
+        distoted_values(mapping1, distortions, K)
+        #Displaying Inertia Values
+        inertia_values()
 
