@@ -141,17 +141,19 @@ def create_artist_recommend(genre_data):
 #find optimal k value for popularity vs loudness
 def find_elbowpoint():
     y_var = [genre_data.acousticness, genre_data.danceability, genre_data.energy, genre_data.instrumentalness, genre_data.valence, genre_data.tempo]
-   
+  
     for item1, item2 in zip(audio_feats, y_var):
         x = genre_data.popularity
         y = item2
+        print('item1 ', item1)
+        print('item2 ', item2)
         X = np.array(list(zip(x, y))).reshape(len(x), 2)
         plt.title(f'Recommended Songs for {genre} genre')
         plt.xlabel('Popularity')
         plt.ylabel(item1)
         plt.scatter(x, y)
         plt.show()
-
+    print('X ', X)
     return X;
 
 #Building the Clustering Model and Calculating Distortion and Inertia
@@ -176,6 +178,10 @@ def cluster_model(X):
 
 #Displaying Distortion Values
 def distoted_values(mapping1, distortions, K):  
+    print("Distortion values:")
+    for key, val in mapping1.items():
+        print(f'{key} : {val}')
+
     plt.plot(K, distortions, 'bx-')
     plt.xlabel('Number of Clusters (k)')
     plt.ylabel('Distortion')
