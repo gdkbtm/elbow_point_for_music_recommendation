@@ -142,17 +142,16 @@ def create_artist_recommend(genre_data):
 def find_elbowpoint():
     y_var = [genre_data.acousticness, genre_data.danceability, genre_data.energy, genre_data.instrumentalness, genre_data.valence, genre_data.tempo]
   
-    for item1, item2 in zip(audio_feats, y_var):
-        x = genre_data.popularity
-        y = item2
-        print('item1 ', item1)
-        print('item2 ', item2)
-        X = np.array(list(zip(x, y))).reshape(len(x), 2)
-        plt.title(f'Recommended Songs for {genre} genre')
-        plt.xlabel('Popularity')
-        plt.ylabel(item1)
-        plt.scatter(x, y)
-        plt.show()
+    #for item1, item2 in zip(audio_feats, y_var):
+    x = genre_data.popularity
+    y = genre_data.acousticness
+    
+    X = np.array(list(zip(x, y))).reshape(len(x), 2)
+    plt.title(f'Recommended Songs for {genre} genre')
+    plt.xlabel('Popularity')
+    plt.ylabel('Acousticness')
+    plt.scatter(x, y)
+    plt.show()
     print('X ', X)
     return X;
 
@@ -164,7 +163,7 @@ def cluster_model(X):
     inertias = []
     mapping1 = {}
     mapping2 = {}
-    K = range(1, 10)
+    K = range(1, 20)
     for k in K:
         kmeanModel = KMeans(n_clusters=k, random_state=42).fit(X)
         
